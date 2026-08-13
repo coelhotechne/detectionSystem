@@ -1,0 +1,48 @@
+package com.coelhotechne.detection_system.sensor.domain;
+
+import com.coelhotechne.detection_system.baseClass.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
+import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@Setter
+@Getter
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "sensor")
+@EqualsAndHashCode(callSuper = true)
+@EntityListeners(AuditingEntityListener.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class Sensor extends BaseEntity {
+    @Column(nullable = false,name = "nome",length = 15)
+    private String name;
+    @Column(name = "status")
+    private boolean status;
+    @Column(name = "activation_time",nullable = false)
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    private LocalDateTime activationTime;
+    @Column(name = "memory_used", precision = 15, scale = 2)
+    private BigDecimal memoryUsed;
+    @Column(name = "data_transfer_value", precision = 15, scale = 2)
+    private BigDecimal dataTransferValue;
+    @Column(name = "data_description",nullable = false, precision = 15, scale = 2)
+    private String dataDescription;
+
+}
