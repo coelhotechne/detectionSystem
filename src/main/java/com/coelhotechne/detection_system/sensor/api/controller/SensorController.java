@@ -3,7 +3,8 @@ package com.coelhotechne.detection_system.sensor.api.controller;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
 import com.coelhotechne.detection_system.sensor.application.SensorService;
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +15,9 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/sensor",produces = MediaType.APPLICATION_JSON_VALUE)
-@AllArgsConstructor
+@Tag(name = "Sensor")
+@RequestMapping(value = "/api/v1/sensor",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class SensorController {
     private final SensorService sensorService;
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
