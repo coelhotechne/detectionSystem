@@ -78,24 +78,15 @@ A lógica de dispositivos é dividida em dois componentes Spring distintos, evit
 - **Entidade base `Entidade`**: usa `@EqualsAndHashCode(onlyExplicitlyIncluded = true)`, com `@EqualsAndHashCode.Include` apenas no campo `uuid`. Subclasses usam `@EqualsAndHashCode(callSuper = true)` para herdar esse comportamento.
 - **`DeviceMapper`** é um `@Component` (não uma classe estática) que faz o mapeamento via setters, em vez de métodos estáticos nos DTOs.
 
-## Estrutura de Pacotes (Package-by-Feature)
-
-A arquitetura pretendida é **package-by-feature**, mas o estado atual tem inconsistências pontuais já mapeadas:
-
-- Pacote `backend` deveria ser renomeado para `shared` ou `common`
-- Pacotes `exceptions` duplicados, sem regra clara de ownership entre eles
-- Pacote `Identity` viola a convenção Java de nomes em minúsculo (deveria ser `identity`)
-- Pacote `frontend` deveria ser renomeado para `web` ou `presentation`
-- `session/metadataExtract` quebra o padrão em camadas adotado no restante do projeto
 
 ## Pendências e Próximos Passos
 
 - [ ] **Spring Security + JWT** — implementação do zero, ainda não iniciada
-- [ ] **🔴 Gap de segurança crítico**: `accessKey` pode estar sendo exposta em `DeviceResponse`, usado pelos endpoints GET — precisa de correção prioritária
-- [ ] **Inconsistência de paths** entre `DeviceAuthController` (`/api/v1/device`) e `DeviceController` (`/device`)
 - [ ] **Decisão pendente**: exigir `@PreAuthorize` de admin em `createDevice`?
 - [ ] **Limpeza da estrutura de pacotes** conforme itens listados acima
-
+- [ ] **Criação do fluxo de menssageria para dispositivos de diferentes tipos
+- [ ] **Classes de definição de escolha de comunicação
+- [ ] **Classes de escolha de tipologia de cameras.
 ---
 
 *Última atualização: gerada a partir do histórico de decisões técnicas do projeto até o momento. Revisar e ajustar conforme o desenvolvimento avança.*
