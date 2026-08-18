@@ -1,7 +1,7 @@
 package com.coelhotechne.detection_system.sensor.api.dto;
 
 
-import com.coelhotechne.detection_system.baseClass.GenericMapper;
+import com.coelhotechne.detection_system.globalClass.GenericMapper;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +20,7 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
         entity.setMemoryUsed(request.memoryUsed());
         entity.setDataTransferValue(request.dataTransferValue());
         entity.setDataDescription(request.dataDescription());
+        entity.setInstallationData(request.installationData());
         return entity;
     }
 
@@ -35,6 +36,7 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
                 entity.getMemoryUsed(),
                 entity.getDataTransferValue(),
                 entity.getDataDescription(),
+                entity.getInstallationData(),
                 entity.getCreatedBy(),
                 entity.getLastModifiedBy(),
                 entity.getCreatedAt(),
