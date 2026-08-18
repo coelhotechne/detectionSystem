@@ -45,6 +45,14 @@ public record SensorResponse(
         BigDecimal memoryUsed,
         BigDecimal dataTransferValue,
         String dataDescription,
+        @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonFormat(
+                pattern = "dd/MM/yyyy HH:mm:ss",
+                shape = JsonFormat.Shape.STRING
+        )
+        LocalDateTime installationData,
         String createdBy,
         String lastModifiedBy,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -76,6 +84,7 @@ public record SensorResponse(
                 sensor.getMemoryUsed(),
                 sensor.getDataTransferValue(),
                 sensor.getDataDescription(),
+                sensor.getInstallationData(),
                 sensor.getCreatedBy(),
                 sensor.getLastModifiedBy(),
                 sensor.getCreatedAt(),
