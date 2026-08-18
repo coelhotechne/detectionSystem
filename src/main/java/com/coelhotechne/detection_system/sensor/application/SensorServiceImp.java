@@ -36,6 +36,7 @@ public class SensorServiceImp implements SensorService {
     public SensorResponse createSensor(SensorRequest sensorRequest) {
         Sensor entity = mapper.toEntity(sensorRequest);
         entity.setActivationTime(LocalDateTime.now());
+        entity.setInstallationData(LocalDateTime.now());
         Sensor created = repository.save(entity);
         return mapper.toResponse(created);
     }
