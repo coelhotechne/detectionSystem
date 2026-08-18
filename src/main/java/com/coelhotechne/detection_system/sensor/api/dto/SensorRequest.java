@@ -34,7 +34,8 @@ public record SensorRequest(
         @NotNull
         BigDecimal dataTransferValue,
         @NotBlank
-        String dataDescription
+        String dataDescription,
+        LocalDateTime installationData
 
 ) {
     public static Sensor toEntity(SensorRequest request) {
@@ -47,7 +48,8 @@ public record SensorRequest(
                 request.activationTime(),
                 request.memoryUsed(),
                 request.dataTransferValue(),
-                request.dataDescription()
+                request.dataDescription(),
+                request.installationData()
         );
     }
 }
