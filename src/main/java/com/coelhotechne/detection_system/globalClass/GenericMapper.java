@@ -1,6 +1,4 @@
-package com.coelhotechne.detection_system.baseClass;
-
-import org.springframework.stereotype.Component;
+package com.coelhotechne.detection_system.globalClass;
 
 import java.util.List;
 
