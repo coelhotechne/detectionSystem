@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.sensor.domain;
 
-import com.coelhotechne.detection_system.baseClass.BaseEntity;
+import com.coelhotechne.detection_system.globalClass.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,8 +15,6 @@ import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Setter
 @Getter
@@ -44,5 +42,8 @@ public class Sensor extends BaseEntity {
     private BigDecimal dataTransferValue;
     @Column(name = "data_description",nullable = false, precision = 15, scale = 2)
     private String dataDescription;
-
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    private LocalDateTime installationData;
 }
