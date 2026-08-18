@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.baseClass;
+package com.coelhotechne.detection_system.globalClass;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -15,7 +15,6 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonNaming;
 import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.ext.javatime.deser.LocalDateDeserializer;
 import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
 import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
 
