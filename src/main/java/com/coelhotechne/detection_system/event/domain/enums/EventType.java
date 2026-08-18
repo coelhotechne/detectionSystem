@@ -1,0 +1,24 @@
+package com.coelhotechne.detection_system.event.domain.enums;
+
+public enum EventType {
+    DETECTED,
+    NOT_DETECTED,
+    STATE_CHANGED,
+    VALUE_CHANGED,
+    THRESHOLD_EXCEEDED,
+    THRESHOLD_BELOW,
+    CONDITION_MET,
+    ANOMALY_DETECTED,
+    ACCESS_GRANTED,
+    ACCESS_DENIED,
+    TAMPERING_DETECTED,
+    CONNECTION_ESTABLISHED,
+    CONNECTION_LOST,
+    RESOURCE_LOW,
+    CAPACITY_REACHED,
+    CREATED,
+    UPDATED,
+    DELETED,
+    INITIALIZED,
+    SHUTDOWN
+}
