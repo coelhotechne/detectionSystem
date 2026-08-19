@@ -1,0 +1,44 @@
+package com.coelhotechne.detection_system.zone.api.dto;
+
+import com.coelhotechne.detection_system.globalClass.GenericMapper;
+import com.coelhotechne.detection_system.zone.domain.Zone;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+
+@Component
+public class ZoneMapper implements GenericMapper<Zone,ZoneResponse, ZoneRequest> {
+    @Override
+    public Zone toEntity(ZoneRequest request) {
+        Objects.requireNonNull(request,"Request cannot be null");
+        Zone entity = new Zone();
+        entity.setName(request.name());
+        entity.setDescription(request.description());
+        entity.setZoneType(request.zoneType());
+        entity.setCenterLatitude(request.centerLatitude());
+        entity.setCenterLongitude(request.centerLongitude());
+        entity.setRadiusMeters(request.radiusMeters());
+        entity.setActive(request.active());
+        entity.setCreatedZoneAtDay(request.createdZoneAtDay());
+        return entity;
+    }
+
+    @Override
+    public ZoneResponse toResponse(Zone entity) {
+        return new ZoneResponse(
+                entity.getUuid(),
+                entity.getName(),
+                entity.getDescription(),
+                entity.getZoneType(),
+                entity.getCenterLatitude(),
+                entity.getCenterLongitude(),
+                entity.getRadiusMeters(),
+                entity.getActive(),
+                entity.getCreatedZoneAtDay(),
+                entity.getCreatedBy(),
+                entity.getLastModifiedBy(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
+}
