@@ -1,6 +1,7 @@
 package com.coelhotechne.detection_system.sensor.api.dto;
 
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.zone.domain.Zone;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record SensorRequest(
@@ -35,13 +37,11 @@ public record SensorRequest(
         BigDecimal dataTransferValue,
         @NotBlank
         String dataDescription,
-        LocalDateTime installationData
+        LocalDateTime installationDate,
+        UUID zoneUUID
 
 ) {
-    public static Sensor toEntity(SensorRequest request) {
-        if (request == null) {
-            return null;
-        }
+    public static Sensor toEntity(SensorRequest request, Zone zone) {
         return new Sensor(
                 request.name(),
                 request.status(),
@@ -49,7 +49,8 @@ public record SensorRequest(
                 request.memoryUsed(),
                 request.dataTransferValue(),
                 request.dataDescription(),
-                request.installationData()
+                request.installationDate(),
+                zone
         );
     }
 }
