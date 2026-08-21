@@ -25,6 +25,9 @@ import java.util.UUID;
         "memoryUsed",
         "dataTransferValue",
         "dataDescription",
+        "installationDate",
+        "zoneUuid",
+        "version",
         "createdBy",
         "lastModifiedBy",
         "createdAt",
@@ -52,7 +55,9 @@ public record SensorResponse(
                 pattern = "dd/MM/yyyy HH:mm:ss",
                 shape = JsonFormat.Shape.STRING
         )
-        LocalDateTime installationData,
+        LocalDateTime installationDate,
+        UUID zoneUuid,
+        Long version,
         String createdBy,
         String lastModifiedBy,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -84,7 +89,9 @@ public record SensorResponse(
                 sensor.getMemoryUsed(),
                 sensor.getDataTransferValue(),
                 sensor.getDataDescription(),
-                sensor.getInstallationData(),
+                sensor.getInstallationDate(),
+                sensor.getZone().getUuid(),
+                sensor.getVersion(),
                 sensor.getCreatedBy(),
                 sensor.getLastModifiedBy(),
                 sensor.getCreatedAt(),
