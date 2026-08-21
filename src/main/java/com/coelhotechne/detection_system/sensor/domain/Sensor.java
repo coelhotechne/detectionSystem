@@ -1,6 +1,7 @@
 package com.coelhotechne.detection_system.sensor.domain;
 
-import com.coelhotechne.detection_system.globalClass.BaseEntity;
+import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
+import com.coelhotechne.detection_system.zone.domain.Zone;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,5 +46,9 @@ public class Sensor extends BaseEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime installationData;
+    private LocalDateTime installationDate;
+    @ManyToOne(fetch = FetchType.LAZY,optional = true)
+    @JoinColumn(name = "zone_id")
+    @EqualsAndHashCode.Exclude
+    private Zone zone;
 }
