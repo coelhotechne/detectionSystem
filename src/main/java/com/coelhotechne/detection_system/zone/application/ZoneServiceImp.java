@@ -20,6 +20,16 @@ import java.util.UUID;
 public class ZoneServiceImp implements ZoneService{
     private final ZoneRepository repository;
     private final ZoneMapper mapper;
+
+    @Override
+    public Zone requireZone(UUID zoneId) {
+        if (zoneId.equals(null)){
+            throw new NullPointerException();
+        }
+        return repository.findById(zoneId)
+                .orElseThrow(() -> new ZoneNotFoundException(zoneId.toString(),"Zone not found."));
+    }
+
     @Override
     public List<ZoneResponse> findZoneList() {
         return repository.findAll().stream().map(mapper::toResponse).toList();
@@ -29,7 +39,7 @@ public class ZoneServiceImp implements ZoneService{
     public ZoneResponse findZoneId(UUID uuid) {
         return repository.findById(uuid).map(mapper::toResponse).orElseThrow(()-> {
             log.error("Zone with id: {} not found!",uuid);
-            throw new ZoneNotFoundException(uuid.toString(),"find one id","not found");
+            return new ZoneNotFoundException(uuid.toString(),"Zone not found");
         });
     }
 
@@ -45,7 +55,7 @@ public class ZoneServiceImp implements ZoneService{
     public ZoneResponse updateZone(UUID uuid, ZoneRequest zoneRequest) {
         Zone updated =  repository.findById(uuid).orElseThrow(()-> {
             log.error("Zone with id: {} not found!",uuid);
-            throw new ZoneNotFoundException(uuid.toString(),"find one id","not found");
+            return new ZoneNotFoundException(uuid.toString(),"Zone not found");
         });
         updated.setName(zoneRequest.name());
         updated.setDescription(zoneRequest.description());
@@ -63,7 +73,7 @@ public class ZoneServiceImp implements ZoneService{
     public ZoneResponse deleteZone(UUID uuid) {
         Zone deleted = repository.findById(uuid).orElseThrow(()-> {
             log.error("Zone with id: {} not found!",uuid);
-            throw new ZoneNotFoundException(uuid.toString(),"find one id","not found");
+            return new ZoneNotFoundException(uuid.toString(),"Zone not found");
         });
         repository.delete(deleted);
         return mapper.toResponse(deleted);

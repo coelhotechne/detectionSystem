@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.globalClass;
+package com.coelhotechne.detection_system.globalClass.mapper;
 
 import java.util.List;
 

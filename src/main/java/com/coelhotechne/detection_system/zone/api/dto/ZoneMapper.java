@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.zone.api.dto;
 
-import com.coelhotechne.detection_system.globalClass.GenericMapper;
+import com.coelhotechne.detection_system.globalClass.mapper.GenericMapper;
 import com.coelhotechne.detection_system.zone.domain.Zone;
 import org.springframework.stereotype.Component;
 

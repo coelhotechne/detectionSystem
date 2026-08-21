@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.device.api.dto;
 
-import com.coelhotechne.detection_system.baseClass.GenericMapper;
+import com.coelhotechne.detection_system.globalClass.mapper.GenericMapper;
 import com.coelhotechne.detection_system.device.domain.Device;
 import org.springframework.stereotype.Component;
 

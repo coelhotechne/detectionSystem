@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.detection.domain;
 
-import com.coelhotechne.detection_system.baseClass.BaseEntity;
+import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;

@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.device.domain;
 
-import com.coelhotechne.detection_system.baseClass.BaseEntity;
+import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

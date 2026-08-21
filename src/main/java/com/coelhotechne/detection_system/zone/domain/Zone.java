@@ -1,6 +1,6 @@
 package com.coelhotechne.detection_system.zone.domain;
 
-import com.coelhotechne.detection_system.globalClass.BaseEntity;
+import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.coelhotechne.detection_system.zone.domain.enums.ZoneType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
