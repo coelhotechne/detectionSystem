@@ -1,10 +1,8 @@
-package com.coelhotechne.detection_system.globalClass;
+package com.coelhotechne.detection_system.globalClass.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -34,19 +32,28 @@ public class BaseEntity implements Serializable {
     private static final long serialVersionUID=1L;
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Setter(AccessLevel.NONE)
     @EqualsAndHashCode.Include
     private UUID uuid;
+    @Setter(AccessLevel.NONE)
+    @EqualsAndHashCode.Exclude
+    @Version
+    private Long version;
     @CreatedBy
+    @Setter(AccessLevel.NONE)
     private String createdBy;
     @LastModifiedBy
+    @Setter(AccessLevel.NONE)
     private String lastModifiedBy;
     @CreatedDate
+    @Setter(AccessLevel.NONE)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss",shape = JsonFormat.Shape.STRING)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime createdAt;
     @LastModifiedDate
+    @Setter(AccessLevel.NONE)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss",shape = JsonFormat.Shape.STRING)
