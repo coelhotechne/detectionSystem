@@ -22,12 +22,12 @@ import java.math.BigDecimal;
 public class Location extends BaseEntity {
     @Column(nullable = false)
     private String name;
-    @Column(precision = 9, scale = 6, nullable = false)
+    @Column(precision = 9, scale = 6)
     private BigDecimal latitude;
-    @Column(precision = 9, scale = 6, nullable = false)
+    @Column(precision = 9, scale = 6)
     private BigDecimal longitude;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "zone_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "zone_id")
     @EqualsAndHashCode.Exclude
     private Zone zone;
 
