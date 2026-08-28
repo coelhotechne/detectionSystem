@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
+import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonNaming;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
 import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @EntityListeners(AuditingEntityListener.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Detection extends BaseEntity {
     @Column(nullable = false)
     private String description;
