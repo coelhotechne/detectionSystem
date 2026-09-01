@@ -16,12 +16,13 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
         Sensor entity = new Sensor();
 
         entity.setName(request.name());
-        entity.setStatus(request.status());
+        entity.setSensorStatus(request.sensorStatus());
         entity.setActivationTime(request.activationTime());
         entity.setMemoryUsed(request.memoryUsed());
         entity.setDataTransferValue(request.dataTransferValue());
         entity.setDataDescription(request.dataDescription());
-        entity.setInstallationDate(request.installationDate());
+        entity.setPowerSupply(request.powerSupply());
+        entity.setInstallation(request.installation());
         return entity;
     }
 
@@ -32,13 +33,14 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
         return new SensorResponse(
                 entity.getUuid(),
                 entity.getName(),
-                entity.isStatus(),
+                entity.getSensorStatus(),
                 entity.getActivationTime(),
                 entity.getMemoryUsed(),
                 entity.getDataTransferValue(),
                 entity.getDataDescription(),
-                entity.getInstallationDate(),
+                entity.getInstallation(),
                 entity.getZone().getUuid(),
+                entity.getPowerSupply(),
                 entity.getVersion(),
                 entity.getCreatedBy(),
                 entity.getLastModifiedBy(),
