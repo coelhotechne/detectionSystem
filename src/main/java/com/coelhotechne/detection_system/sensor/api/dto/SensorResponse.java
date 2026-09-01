@@ -1,6 +1,8 @@
 package com.coelhotechne.detection_system.sensor.api.dto;
 
 
+import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
+import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -20,12 +22,13 @@ import java.util.UUID;
 @JsonPropertyOrder({
         "uuid",
         "name",
-        "status",
+        "sensorStatus",
         "activationTime",
         "memoryUsed",
         "dataTransferValue",
         "dataDescription",
-        "installationDate",
+        "installation",
+        "sensorBattery",
         "zoneUuid",
         "version",
         "createdBy",
@@ -36,7 +39,7 @@ import java.util.UUID;
 public record SensorResponse(
         UUID uuid,
         String name,
-        boolean status,
+        boolean sensorStatus,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -55,8 +58,9 @@ public record SensorResponse(
                 pattern = "dd/MM/yyyy HH:mm:ss",
                 shape = JsonFormat.Shape.STRING
         )
-        LocalDateTime installationDate,
+        Installation installation,
         UUID zoneUuid,
+        PowerSupply powerSupply,
         Long version,
         String createdBy,
         String lastModifiedBy,
@@ -78,19 +82,17 @@ public record SensorResponse(
         LocalDateTime updatedAt
 ) {
     public static SensorResponse toResponse(Sensor sensor) {
-        if (sensor == null) {
-            return null;
-        }
         return new SensorResponse(
                 sensor.getUuid(),
                 sensor.getName(),
-                sensor.isStatus(),
+                sensor.getSensorStatus(),
                 sensor.getActivationTime(),
                 sensor.getMemoryUsed(),
                 sensor.getDataTransferValue(),
                 sensor.getDataDescription(),
-                sensor.getInstallationDate(),
+                sensor.getInstallation(),
                 sensor.getZone().getUuid(),
+                sensor.getPowerSupply(),
                 sensor.getVersion(),
                 sensor.getCreatedBy(),
                 sensor.getLastModifiedBy(),
