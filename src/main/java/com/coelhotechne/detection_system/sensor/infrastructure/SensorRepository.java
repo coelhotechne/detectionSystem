@@ -7,6 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface SensorRepository extends JpaRepository<Sensor, UUID> {
-    Optional<Sensor> findById(UUID uuid);
     Optional<Sensor> findByName(String name);
+    Optional<Sensor>findByNameAndZoneName(String sensorName, String zoneName);
 }
