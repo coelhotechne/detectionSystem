@@ -16,7 +16,8 @@ import java.util.UUID;
 
 @RestController
 @Tag(name = "Sensor")
-@RequestMapping(value = "/api/v1/sensor",produces = MediaType.APPLICATION_JSON_VALUE)
+@CrossOrigin(origins = "http://localhost:5173") // ou o IP/host da UI em produção
+@RequestMapping(value = "/api/v1/sensors",produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class SensorController {
     private final SensorService sensorService;
@@ -44,17 +45,4 @@ public class SensorController {
     public ResponseEntity<SensorResponse> deleteSensor(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(sensorService.deleteSensor(id));
     }
-
-    /*
-    @PatchMapping(value = "/{id}/sensores-tipo",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void>atualizarSensoresTipo(@PathVariable UUID id, @RequestBody Map<SensoresTipo,Boolean> novosEstados){
-        sensorService.atualizarSensores(id,novosEstados);
-        return ResponseEntity.noContent().build();
-    }
-    @PatchMapping(value = "/{id}/regiao",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void>atualizarRegiao(@PathVariable UUID id, @RequestBody Map<Regiao,Boolean>novasRegioes){
-        sensorService.atualizarRegioes(id,novasRegioes);
-        return ResponseEntity.noContent().build();
-    }
-*/
 }
