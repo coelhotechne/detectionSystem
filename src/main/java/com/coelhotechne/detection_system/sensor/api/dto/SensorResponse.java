@@ -4,6 +4,8 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
+import com.coelhotechne.detection_system.sensor.exceptions.SensorWithoutZoneException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,14 +24,14 @@ import java.util.UUID;
 @JsonPropertyOrder({
         "uuid",
         "name",
-        "sensorStatus",
+        "status",
         "activationTime",
         "memoryUsed",
         "dataTransferValue",
         "dataDescription",
         "installation",
-        "sensorBattery",
         "zoneUuid",
+        "powerSupply",
         "version",
         "createdBy",
         "lastModifiedBy",
@@ -39,25 +41,15 @@ import java.util.UUID;
 public record SensorResponse(
         UUID uuid,
         String name,
-        boolean sensorStatus,
+        SensorStatus status,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @JsonFormat(
-                pattern = "dd/MM/yyyy HH:mm:ss",
-                shape = JsonFormat.Shape.STRING
-        )
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", shape = JsonFormat.Shape.STRING)
         LocalDateTime activationTime,
         BigDecimal memoryUsed,
         BigDecimal dataTransferValue,
         String dataDescription,
-        @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-        @JsonSerialize(using = LocalDateTimeSerializer.class)
-        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @JsonFormat(
-                pattern = "dd/MM/yyyy HH:mm:ss",
-                shape = JsonFormat.Shape.STRING
-        )
         Installation installation,
         UUID zoneUuid,
         PowerSupply powerSupply,
@@ -67,37 +59,12 @@ public record SensorResponse(
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @JsonFormat(
-                pattern = "dd/MM/yyyy HH:mm:ss",
-                shape = JsonFormat.Shape.STRING
-        )
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", shape = JsonFormat.Shape.STRING)
         LocalDateTime createdAt,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @JsonFormat(
-                pattern = "dd/MM/yyyy HH:mm:ss",
-                shape = JsonFormat.Shape.STRING
-        )
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", shape = JsonFormat.Shape.STRING)
         LocalDateTime updatedAt
 ) {
-    public static SensorResponse toResponse(Sensor sensor) {
-        return new SensorResponse(
-                sensor.getUuid(),
-                sensor.getName(),
-                sensor.getSensorStatus(),
-                sensor.getActivationTime(),
-                sensor.getMemoryUsed(),
-                sensor.getDataTransferValue(),
-                sensor.getDataDescription(),
-                sensor.getInstallation(),
-                sensor.getZone().getUuid(),
-                sensor.getPowerSupply(),
-                sensor.getVersion(),
-                sensor.getCreatedBy(),
-                sensor.getLastModifiedBy(),
-                sensor.getCreatedAt(),
-                sensor.getUpdatedAt()
-        );
-    }
 }
