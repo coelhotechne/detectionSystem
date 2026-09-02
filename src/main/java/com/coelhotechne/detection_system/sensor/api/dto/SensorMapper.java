@@ -3,9 +3,12 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 
 import com.coelhotechne.detection_system.globalClass.mapper.GenericMapper;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.exceptions.SensorWithoutZoneException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.UUID;
+
 @Component
 public class SensorMapper implements GenericMapper<Sensor, SensorResponse, SensorRequest> {
 
@@ -16,7 +19,6 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
         Sensor entity = new Sensor();
 
         entity.setName(request.name());
-        entity.setSensorStatus(request.sensorStatus());
         entity.setActivationTime(request.activationTime());
         entity.setMemoryUsed(request.memoryUsed());
         entity.setDataTransferValue(request.dataTransferValue());
@@ -29,17 +31,21 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
     @Override
     public SensorResponse toResponse(Sensor entity) {
         Objects.requireNonNull(entity, "Entity cannot be null");
+        UUID zoneUuid = entity.getZone() != null ? entity.getZone().getUuid() : null;
+        if (entity.getZone() == null){
+            throw new SensorWithoutZoneException(entity.getUuid().toString(),"Sensor without zone");
 
+        }
         return new SensorResponse(
                 entity.getUuid(),
                 entity.getName(),
-                entity.getSensorStatus(),
+                entity.getStatus(),
                 entity.getActivationTime(),
                 entity.getMemoryUsed(),
                 entity.getDataTransferValue(),
                 entity.getDataDescription(),
                 entity.getInstallation(),
-                entity.getZone().getUuid(),
+                zoneUuid,
                 entity.getPowerSupply(),
                 entity.getVersion(),
                 entity.getCreatedBy(),
