@@ -1,5 +1,6 @@
 package com.coelhotechne.detection_system.sensor.exceptions;
 
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
