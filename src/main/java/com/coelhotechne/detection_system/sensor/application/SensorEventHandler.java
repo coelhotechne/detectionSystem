@@ -1,42 +1,35 @@
 package com.coelhotechne.detection_system.sensor.application;
 
-import com.coelhotechne.detection_system.sensor.domain.sensorevent.SensorEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.event.SensorEvent;
+import com.coelhotechne.detection_system.sensor.event.SensorEventProcessor;
+import com.coelhotechne.detection_system.sensor.exceptions.SensorNotFoundException;
+import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
+import com.coelhotechne.detection_system.sensor.mqtt.RawSensorTopic;
+import com.coelhotechne.detection_system.sensor.mqtt.SensorTopic;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class SensorEventHandler {
-    private final ObjectMapper objectMapper;
-    private final SensorService sensorService;
 
-    public void handle(String topic, String payload) {
+    private final SensorEventFactory eventFactory;
+    private final SensorRepository sensorRepository;
+    private final SensorEventProcessor eventProcessor;
 
-        SensorEvent event = parse(topic, payload);
+    public void handle(String rawTopic, String payload) {
+        RawSensorTopic raw = RawSensorTopic.parse(rawTopic);
 
-        sensorService.process(event);
-    }
+        UUID sensorId = sensorRepository.findByNameAndZoneName(raw.sensorName(), raw.zoneName())
+                .map(Sensor::getUuid)
+                .orElseThrow(() -> new SensorNotFoundException(raw.sensorName(),
+                        "Sensor '%s' not found in zone '%s'".formatted(raw.sensorName(), raw.zoneName())));
 
-    private SensorEvent parse(
-            String topic,
-            String payload
-    ) {
-
-        try {
-
-            return objectMapper.readValue(
-                    payload,
-                    SensorEvent.class
-            );
-
-        } catch (JsonProcessingException e) {
-
-            throw new SensorEventParseException(
-                    "Unable to parse sensor event",
-                    e
-            );
-        }
+        SensorTopic topic = new SensorTopic(sensorId, raw.eventType());
+        SensorEvent event = eventFactory.create(topic, payload);
+        eventProcessor.process(event);
     }
 }
