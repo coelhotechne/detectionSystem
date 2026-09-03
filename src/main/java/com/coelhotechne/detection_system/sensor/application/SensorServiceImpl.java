@@ -3,27 +3,21 @@ package com.coelhotechne.detection_system.sensor.application;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorMapper;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
-import com.coelhotechne.detection_system.sensor.api.dto.SensorTelemetryPayload;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
-import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
-import com.coelhotechne.detection_system.sensor.domain.sensorevent.SensorDetectionEvent;
-import com.coelhotechne.detection_system.sensor.domain.sensorevent.SensorEvent;
-import com.coelhotechne.detection_system.sensor.domain.sensorevent.SensorStatusEvent;
-import com.coelhotechne.detection_system.sensor.domain.sensorevent.SensorTelemetryEvent;
+import com.coelhotechne.detection_system.sensor.event.SensorEvent;
+import com.coelhotechne.detection_system.sensor.event.SensorEventProcessor;
 import com.coelhotechne.detection_system.sensor.exceptions.*;
-import com.coelhotechne.detection_system.sensor.infrastructure.mqtt.MqttSensorClient;
+import com.coelhotechne.detection_system.sensor.event.application.MqttSensorClient;
 import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
 import com.coelhotechne.detection_system.zone.application.ZoneService;
 import com.coelhotechne.detection_system.zone.domain.Zone;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -35,7 +29,7 @@ public class SensorServiceImpl implements SensorService {
     private final SensorMapper mapper;
     private final ZoneService zoneService;
     private final MqttSensorClient mqttSensorClient;
-    private final ApplicationEventPublisher eventPublisher;
+    private final SensorEventProcessor eventProcessor;
 
     @Override
     @Transactional(readOnly = true)
@@ -115,36 +109,12 @@ public class SensorServiceImpl implements SensorService {
     }
 
     @Override
-    @Transactional
-    public void applyTelemetry(String zoneName, String sensorName, SensorTelemetryPayload payload) {
-        Sensor sensor = repository.findByNameAndZoneName(sensorName, zoneName)
-                // bug corrigido: o zoneName estava sendo passado como se fosse o
-                // "reason" da exception (segundo parâmetro é o texto exibido na
-                // API, não um segundo identificador) — agora vai uma mensagem de
-                // verdade, com os dois nomes só pro log/detail.
-                .orElseThrow(() -> new SensorNotFoundException(sensorName,
-                        "Sensor '%s' not found in zone '%s'".formatted(sensorName, zoneName)));
-
-        Instant now = Instant.now();
-        SensorStatus previousStatus = sensor.applyDiagnostics(payload, now);
-
-        Sensor saved;
-        try {
-            // uma única escrita por mensagem MQTT — antes o handler chamava
-            // isso até duas vezes pra cada evento recebido.
-            saved = repository.saveAndFlush(sensor);
-        } catch (ObjectOptimisticLockingFailureException ex) {
-            throw new SensorConcurrentModificationException(sensor.getUuid().toString(), ex);
-        }
-
-        eventPublisher.publishEvent(new SensorTelemetryEvent(
-                UUID.randomUUID(), saved.getUuid(), payload, now));
-
-        if (previousStatus != saved.getStatus()) {
-            eventPublisher.publishEvent(new SensorStatusEvent(
-                    UUID.randomUUID(), saved.getUuid(), previousStatus, saved.getStatus(), now));
-        }
+    public void process(SensorEvent event) {
+        // transação já acontece dentro de SensorEventProcessor.process — não
+        // duplica @Transactional aqui.
+        eventProcessor.process(event);
     }
+
 
     @Override
     public void sendCommand(UUID uuid, String action) {
