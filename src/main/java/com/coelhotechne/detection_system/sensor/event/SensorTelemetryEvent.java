@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.sensor.domain.sensorevent;
+package com.coelhotechne.detection_system.sensor.event;
 
 import com.coelhotechne.detection_system.sensor.api.dto.SensorTelemetryPayload;
 
