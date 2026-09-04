@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.sensor.api.dto;
+package com.coelhotechne.detection_system.sensor.domain.payload;
 
 import java.math.BigDecimal;
 
