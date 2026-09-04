@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.sensor.event;
+package com.coelhotechne.detection_system.sensor.domain.payload;
 
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 
