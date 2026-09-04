@@ -1,6 +1,8 @@
 package com.coelhotechne.detection_system.sensor.application;
 
-import com.coelhotechne.detection_system.sensor.api.dto.SensorTelemetryPayload;
+import com.coelhotechne.detection_system.sensor.domain.payload.SensorTelemetryPayload;
+import com.coelhotechne.detection_system.sensor.domain.payload.SensorDetectionPayload;
+import com.coelhotechne.detection_system.sensor.domain.payload.SensorStatusPayload;
 import com.coelhotechne.detection_system.sensor.event.*;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorEventParseException;
 import com.coelhotechne.detection_system.sensor.exceptions.UnsupportedSensorEventException;
