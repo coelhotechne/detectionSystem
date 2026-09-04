@@ -23,8 +23,8 @@ public class ZoneServiceImp implements ZoneService{
 
     @Override
     public Zone requireZone(UUID zoneId) {
-        if (zoneId.equals(null)){
-            throw new NullPointerException();
+        if (zoneId==null){
+            throw new NullPointerException("Zone cannot be null");
         }
         return repository.findById(zoneId)
                 .orElseThrow(() -> new ZoneNotFoundException(zoneId.toString(),"Zone not found."));
