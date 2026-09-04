@@ -2,7 +2,6 @@ package com.coelhotechne.detection_system.sensor.application;
 
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.event.SensorEvent;
-import com.coelhotechne.detection_system.sensor.event.SensorEventProcessor;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorNotFoundException;
 import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
 import com.coelhotechne.detection_system.sensor.mqtt.RawSensorTopic;
