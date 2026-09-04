@@ -1,7 +1,8 @@
-package com.coelhotechne.detection_system.sensor.event;
+package com.coelhotechne.detection_system.sensor.application;
 
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
+import com.coelhotechne.detection_system.sensor.event.*;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorConcurrentModificationException;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorNotFoundException;
 import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
