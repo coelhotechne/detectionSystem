@@ -3,7 +3,7 @@ package com.coelhotechne.detection_system.sensor.domain;
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.coelhotechne.detection_system.installation.domain.Installation;
-import com.coelhotechne.detection_system.sensor.api.dto.SensorTelemetryPayload;
+import com.coelhotechne.detection_system.sensor.domain.payload.SensorTelemetryPayload;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 import com.coelhotechne.detection_system.zone.domain.Zone;
 import com.fasterxml.jackson.annotation.JsonFormat;
