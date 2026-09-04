@@ -2,13 +2,14 @@ package com.coelhotechne.detection_system.sensor.application;
 
 import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
-import com.coelhotechne.detection_system.sensor.api.dto.SensorTelemetryPayload;
+import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.event.SensorEvent;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface SensorService {
+    Sensor requireSensor(UUID sensorId);
     List<SensorResponse> findSensorList();
     SensorResponse findSensorId(UUID uuid);
     SensorResponse createSensor(SensorRequest sensorRequest);
