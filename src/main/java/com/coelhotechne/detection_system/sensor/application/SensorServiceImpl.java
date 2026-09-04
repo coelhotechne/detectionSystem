@@ -5,9 +5,8 @@ import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.event.SensorEvent;
-import com.coelhotechne.detection_system.sensor.event.SensorEventProcessor;
 import com.coelhotechne.detection_system.sensor.exceptions.*;
-import com.coelhotechne.detection_system.sensor.event.application.MqttSensorClient;
+import com.coelhotechne.detection_system.sensor.mqtt.MqttSensorClient;
 import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
 import com.coelhotechne.detection_system.zone.application.ZoneService;
 import com.coelhotechne.detection_system.zone.domain.Zone;
@@ -30,6 +29,15 @@ public class SensorServiceImpl implements SensorService {
     private final ZoneService zoneService;
     private final MqttSensorClient mqttSensorClient;
     private final SensorEventProcessor eventProcessor;
+
+    @Override
+    public Sensor requireSensor(UUID sensorId) {
+        if (sensorId==null){
+            throw new NullPointerException("Sensor cannot be null");
+        }
+        return repository.findById(sensorId)
+                .orElseThrow(() -> new SensorNotFoundException(sensorId.toString(),"Sensor not found."));
+    }
 
     @Override
     @Transactional(readOnly = true)
