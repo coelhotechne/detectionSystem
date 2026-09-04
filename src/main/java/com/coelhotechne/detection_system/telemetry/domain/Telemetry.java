@@ -7,16 +7,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "telemetry")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,5 +33,4 @@ public class Telemetry extends BaseEntity {
     @Column(name = "measured_at",nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "dd/MM/yyyy HH:mm:ss")
     private Instant measuredAt;
-
 }
