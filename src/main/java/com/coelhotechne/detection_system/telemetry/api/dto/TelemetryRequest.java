@@ -1,12 +1,9 @@
 package com.coelhotechne.detection_system.telemetry.api.dto;
 
 
-import com.coelhotechne.detection_system.sensor.domain.Sensor;
-import com.coelhotechne.detection_system.telemetry.domain.Telemetry;
-import com.coelhotechne.detection_system.zone.domain.Zone;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonNaming;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -20,16 +17,7 @@ public record TelemetryRequest(
         UUID sensorId,
         @NotNull
         Integer measuredValue,
-        @NotNull
         Instant measuredAt
 
 ) {
-    public static Telemetry toEntity(TelemetryRequest telemetryRequest, Zone zone, Sensor sensor) {
-        return new Telemetry(
-                zone,
-                sensor,
-                telemetryRequest.measuredValue(),
-                telemetryRequest.measuredAt()
-        );
-    }
 }
