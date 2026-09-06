@@ -1,7 +1,7 @@
 package com.coelhotechne.detection_system.detection.domain;
 
-import com.coelhotechne.detection_system.cam.domain.CamFixed;
-import com.coelhotechne.detection_system.cam.domain.CamPtz;
+import com.coelhotechne.detection_system.cam.domain.fixed.CamFixed;
+import com.coelhotechne.detection_system.cam.domain.ptz.CamPtz;
 import com.coelhotechne.detection_system.detection.domain.enums.CamDetectionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
