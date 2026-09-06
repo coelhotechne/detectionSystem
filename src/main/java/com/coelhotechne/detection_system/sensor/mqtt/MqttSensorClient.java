@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.sensor.event.application;
+package com.coelhotechne.detection_system.sensor.mqtt;
 
 import com.coelhotechne.detection_system.sensor.application.SensorEventHandler;
 import jakarta.annotation.PostConstruct;
