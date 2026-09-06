@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.cam.domain.enums;
+package com.coelhotechne.detection_system.cam.domain.base.enums;
 
 public enum ImageQuality {
     LOW,
