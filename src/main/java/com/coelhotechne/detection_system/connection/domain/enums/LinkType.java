@@ -60,4 +60,7 @@ public enum LinkType {
         this.connectionType = connectionType;
         this.ipCapable = ipCapable;
     }
+    public boolean isWireless() {
+        return connectionType == ConnectionType.WIRELESS;
+    }
 }
