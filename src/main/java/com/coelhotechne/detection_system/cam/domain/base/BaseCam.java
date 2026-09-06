@@ -1,8 +1,11 @@
-package com.coelhotechne.detection_system.cam.domain;
+package com.coelhotechne.detection_system.cam.domain.base;
 
-import com.coelhotechne.detection_system.batterySupply.domain.PowerSupply;
-import com.coelhotechne.detection_system.cam.domain.enums.CamStatus;
-import com.coelhotechne.detection_system.cam.domain.enums.ImageQuality;
+import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
+import com.coelhotechne.detection_system.cam.domain.base.enums.CamStatus;
+import com.coelhotechne.detection_system.cam.domain.base.enums.ImageQuality;
+import com.coelhotechne.detection_system.cam.domain.connectioncam.CamConnectionParams;
+import com.coelhotechne.detection_system.cam.domain.connectioncam.CamConnectionProfile;
+import com.coelhotechne.detection_system.cam.domain.connectioncam.enums.CamProtocol;
 import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.zone.domain.Zone;
@@ -30,7 +33,17 @@ import java.time.Instant;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 public class BaseCam extends BaseEntity {
-    @Column()
+    @Column(name = "cam_model",nullable = false)
+    private String camModel;
+    @Column(name = "firmware_version", nullable = false)
+    private String firmwareVersion;
+    @Column(name = "serial_number", nullable = false, unique = true)
+    private String serialNumber;
+    @Column(name = "mac_address", nullable = false, unique = true)
+    private String macAddress;
+    @Column(name = "ip_address", nullable = false)
+    private String ipAddress;
+    @Column
     private String rtsp;
     @Enumerated(EnumType.STRING)
     private CamStatus camStatus;
@@ -50,14 +63,12 @@ public class BaseCam extends BaseEntity {
     private String compression;
     @Column(name = "frame_url")
     private String frameUrl;
-    @JsonDeserialize(using = InstantDeserializer.class)
-    @JsonSerialize(using = InstantSerializer.class)
+
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'",timezone = "UTC")
     @Column(name = "frame_timestamp")
     private Instant frameTimestamp;
-    @JsonDeserialize(using = InstantDeserializer.class)
-    @JsonSerialize(using = InstantSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'",timezone = "UTC")
+    @Column(name = "cam_timestamp")
     private Instant timestamp;
     @Embedded
     @EqualsAndHashCode.Exclude
@@ -69,6 +80,12 @@ public class BaseCam extends BaseEntity {
     @JoinColumn(name = "zone_id")
     @EqualsAndHashCode.Exclude
     private Zone zone;
+    @Embedded
+    @EqualsAndHashCode.Exclude
+    private CamConnectionProfile camConnection;
+
+    //Automatico ::::::::::::::::::::::::::::::::::::::::::::::Selecoes
+
     public void setResolution(Integer width,Integer height){
         if (width==null||height==null){
             this.height=null;
@@ -98,5 +115,24 @@ public class BaseCam extends BaseEntity {
             return ImageQuality.HIGH;
         }
         return ImageQuality.UNKNOWN;
+    }
+    public void configureCamConnection(CamProtocol protocol, CamConnectionParams params) {
+        switch (protocol) {
+            case RTSP, NATIVE -> {
+                if (params.streamUri() == null) {
+                    throw new IllegalArgumentException("streamUri é obrigatório para protocolo " + protocol);
+                }
+            }
+            case ONVIF, PROPRIETARY_SDK -> {
+                if (params.host() == null || params.port() == null) {
+                    throw new IllegalArgumentException("host/port são obrigatórios para protocolo " + protocol);
+                }
+            }
+        }
+        this.camConnection = new CamConnectionProfile(
+                protocol, params.streamUri(), params.host(), params.port(),
+                params.vendorSdkId(), params.credentialRef(), params.capabilities(),
+                params.linkType(), params.ipAddress(), params.signalStrengthDbm()
+        );
     }
 }
