@@ -6,6 +6,7 @@ import com.coelhotechne.detection_system.cam.domain.base.enums.ImageQuality;
 import com.coelhotechne.detection_system.cam.domain.connectioncam.CamConnectionParams;
 import com.coelhotechne.detection_system.cam.domain.connectioncam.CamConnectionProfile;
 import com.coelhotechne.detection_system.cam.domain.connectioncam.enums.CamProtocol;
+import com.coelhotechne.detection_system.cam.domain.homologation.CamHomologationRecord;
 import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.zone.domain.Zone;
@@ -84,7 +85,34 @@ public class BaseCam extends BaseEntity {
     @EqualsAndHashCode.Exclude
     private CamConnectionProfile camConnection;
 
+    @Setter(AccessLevel.NONE)
+    @Column(name = "access_key", unique = true)
+    private String accessKey;
+
+    @Setter(AccessLevel.NONE)
+    @Column(name = "last_communication")
+    private Instant lastCommunication;
+
+    @Setter(AccessLevel.NONE)
+    @Embedded
+    @EqualsAndHashCode.Exclude
+    private CamHomologationRecord homologation = new CamHomologationRecord();
+
     //Automatico ::::::::::::::::::::::::::::::::::::::::::::::Selecoes
+
+    public void assignAccessKey(String accessKey) {
+        if (this.accessKey != null) {
+            throw new IllegalStateException("Access Key already assigned to this camera \n use Rotate Access Key to switch");
+        }
+        this.accessKey = accessKey;
+    }
+    public void rotateAccessKey(String newAccessKey) {
+        this.accessKey = newAccessKey;
+    }
+
+    public void recordCommunication(Instant when) {
+        this.lastCommunication = when;
+    }
 
     public void setResolution(Integer width,Integer height){
         if (width==null||height==null){
@@ -120,12 +148,12 @@ public class BaseCam extends BaseEntity {
         switch (protocol) {
             case RTSP, NATIVE -> {
                 if (params.streamUri() == null) {
-                    throw new IllegalArgumentException("streamUri é obrigatório para protocolo " + protocol);
+                    throw new IllegalArgumentException("Stream Uri is required for the protocol: " + protocol);
                 }
             }
             case ONVIF, PROPRIETARY_SDK -> {
                 if (params.host() == null || params.port() == null) {
-                    throw new IllegalArgumentException("host/port são obrigatórios para protocolo " + protocol);
+                    throw new IllegalArgumentException("host/port is required for the protocol: " + protocol);
                 }
             }
         }
