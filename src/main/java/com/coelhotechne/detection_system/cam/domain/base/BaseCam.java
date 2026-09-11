@@ -15,11 +15,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonNaming;
-import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.ext.javatime.deser.InstantDeserializer;
-import tools.jackson.databind.ext.javatime.ser.InstantSerializer;
 
 import java.time.Instant;
 
