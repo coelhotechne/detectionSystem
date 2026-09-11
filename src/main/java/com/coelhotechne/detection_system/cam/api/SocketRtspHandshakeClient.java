@@ -45,7 +45,6 @@ public class SocketRtspHandshakeClient implements CamConnectionTestProbe {
         if (streamUri == null) {
             return CamConnectionTestOutcome.failure("Uri not configured");
         }
-
         URI uri;
         try {
             uri = new URI(streamUri);
