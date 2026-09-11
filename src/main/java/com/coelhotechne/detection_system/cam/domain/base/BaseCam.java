@@ -82,7 +82,6 @@ public class BaseCam extends BaseEntity {
     private CamConnectionProfile camConnection;
 
     @Setter(AccessLevel.NONE)
-    @Getter(AccessLevel.NONE)
     @Column(name = "access_key", unique = true)
     private String accessKey;
 
