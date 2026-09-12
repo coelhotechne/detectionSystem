@@ -4,6 +4,7 @@ import com.coelhotechne.detection_system.location.api.dto.LocationMapper;
 import com.coelhotechne.detection_system.location.api.dto.LocationRequest;
 import com.coelhotechne.detection_system.location.api.dto.LocationResponse;
 import com.coelhotechne.detection_system.location.domain.Location;
+import com.coelhotechne.detection_system.location.exceptions.LocationIdNotFoundException;
 import com.coelhotechne.detection_system.location.exceptions.LocationNotFoundException;
 import com.coelhotechne.detection_system.location.infrastructure.LocationRepository;
 import com.coelhotechne.detection_system.zone.application.ZoneService;
@@ -22,6 +23,16 @@ public class LocationServiceImp implements LocationService{
     private final LocationRepository repository;
     private final LocationMapper mapper;
     private final ZoneService zoneService;
+
+    @Override
+    public Location requireLocation(UUID locationId) {
+        if (locationId==null){
+            throw new NullPointerException("Location cannot be null");
+        }
+        return repository.findById(locationId)
+                .orElseThrow(() -> new LocationIdNotFoundException(locationId.toString(),"Location ID Not Found."));
+
+    }
 
     @Override
     public List<LocationResponse> findLocationList() {
