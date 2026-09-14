@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.batterySupply.domain;
+package com.coelhotechne.detection_system.batterysupply.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
