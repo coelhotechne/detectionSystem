@@ -3,6 +3,7 @@ package com.coelhotechne.detection_system.sensor.domain;
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.globalClass.entities.BaseEntity;
 import com.coelhotechne.detection_system.installation.domain.Installation;
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorNiche;
 import com.coelhotechne.detection_system.sensor.domain.payload.SensorTelemetryPayload;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 import com.coelhotechne.detection_system.zone.domain.Zone;
@@ -37,8 +38,11 @@ public class Sensor extends BaseEntity {
     @Column(nullable = false,name = "nome",length = 15)
     private String name;
     @Enumerated(EnumType.STRING)
+    @Column(name = "sensor_niche",nullable = false)
+    private SensorNiche sensorNiche;
+    @Enumerated(EnumType.STRING)
     @Column(name = "sensor_status", nullable = false, length = 30)
-    private SensorStatus status = SensorStatus.INITIALIZING;
+    private SensorStatus sensorStatus = SensorStatus.INITIALIZING;
     @Column(name = "activation_time",nullable = false)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -50,6 +54,8 @@ public class Sensor extends BaseEntity {
     private BigDecimal dataTransferValue;
     @Column(name = "data_description",nullable = false)
     private String dataDescription;
+    @Column(name = "last_communication",nullable = false)
+    private Instant lastCommunication;
     @Embedded
     @EqualsAndHashCode.Exclude
     private Installation installation;
@@ -60,6 +66,9 @@ public class Sensor extends BaseEntity {
     @Embedded
     @EqualsAndHashCode.Exclude
     private PowerSupply powerSupply;
+    @Setter(AccessLevel.NONE)
+    @Column(name = "access_key", unique = true)
+    private String accessKey;
 
     /**
      * Aplica uma leitura de diagnóstico recebida via telemetria MQTT e
@@ -69,12 +78,12 @@ public class Sensor extends BaseEntity {
      * decidir se quer emitir um SensorStatusEvent.
      */
     public SensorStatus applyDiagnostics(SensorTelemetryPayload payload, Instant now) {
-        SensorStatus previous = this.status;
+        SensorStatus previous = this.sensorStatus;
 
         this.memoryUsed = payload.memoryUsed();
         this.dataTransferValue = payload.dataTransferValue();
         this.dataDescription = payload.dataDescription();
-        this.status = resolveStatus(payload);
+        this.sensorStatus = resolveStatus(payload);
 
         return previous;
     }
@@ -96,8 +105,8 @@ public class Sensor extends BaseEntity {
      * pra sensores que pararam de reportar dentro da janela esperada.
      */
     public SensorStatus markDisconnected() {
-        SensorStatus previous = this.status;
-        this.status = SensorStatus.DISCONNECTED;
+        SensorStatus previous = this.sensorStatus;
+        this.sensorStatus = SensorStatus.DISCONNECTED;
         return previous;
     }
 }
