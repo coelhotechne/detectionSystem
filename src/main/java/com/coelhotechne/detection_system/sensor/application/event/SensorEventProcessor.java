@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.sensor.application;
+package com.coelhotechne.detection_system.sensor.application.event;
 
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
@@ -44,18 +44,18 @@ public class SensorEventProcessor {
         Sensor sensor = requireSensor(event.sensorId());
         SensorStatus previousStatus = sensor.applyDiagnostics(event.diagnostics(), event.occurredAt());
         Sensor saved = saveOrConflict(sensor);
-        publishStatusChangeIfAny(saved.getUuid(), previousStatus, saved.getStatus(), event.occurredAt());
+        publishStatusChangeIfAny(saved.getUuid(), previousStatus, saved.getSensorStatus(), event.occurredAt());
     }
 
     private void applyReportedStatus(SensorStatusReportedEvent event) {
         Sensor sensor = requireSensor(event.sensorId());
-        SensorStatus previousStatus = sensor.getStatus();
+        SensorStatus previousStatus = sensor.getSensorStatus();
         if (previousStatus == event.reportedStatus()) {
             return;
         }
-        sensor.setStatus(event.reportedStatus());
+        sensor.setSensorStatus(event.reportedStatus());
         Sensor saved = saveOrConflict(sensor);
-        publishStatusChangeIfAny(saved.getUuid(), previousStatus, saved.getStatus(), event.occurredAt());
+        publishStatusChangeIfAny(saved.getUuid(), previousStatus, saved.getSensorStatus(), event.occurredAt());
     }
 
     private void applyDetection(SensorDetectionEvent event) {
