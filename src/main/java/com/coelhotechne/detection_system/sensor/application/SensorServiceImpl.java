@@ -3,6 +3,7 @@ package com.coelhotechne.detection_system.sensor.application;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorMapper;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
 import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
+import com.coelhotechne.detection_system.sensor.application.event.SensorEventProcessor;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.event.SensorEvent;
 import com.coelhotechne.detection_system.sensor.exceptions.*;
@@ -17,6 +18,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -67,6 +69,7 @@ public class SensorServiceImpl implements SensorService {
         Sensor entity = mapper.toEntity(sensorRequest);
         Zone zone = zoneService.requireZone(sensorRequest.zoneUUID());
         entity.setActivationTime(LocalDateTime.now());
+        entity.setLastCommunication(Instant.now());
         entity.setInstallation(sensorRequest.installation());
         entity.setZone(zone);
         Sensor created = repository.save(entity);
@@ -80,9 +83,9 @@ public class SensorServiceImpl implements SensorService {
                 .findById(uuid)
                 .orElseThrow(()-> new SensorNotFoundException(uuid.toString(),"Sensor not found!"));
 
-        if (updated.getStatus().isOperational()) {
+        if (updated.getSensorStatus().isOperational()) {
             throw new SensorStillActiveException(uuid.toString(), true,
-                    "Sensor is currently active (%s), deactivate before updating".formatted(updated.getStatus()));
+                    "Sensor is currently active (%s), deactivate before updating".formatted(updated.getSensorStatus()));
         }
 
 
@@ -91,6 +94,7 @@ public class SensorServiceImpl implements SensorService {
         updated.setMemoryUsed(sensorRequest.memoryUsed());
         updated.setDataTransferValue(sensorRequest.dataTransferValue());
         updated.setDataDescription(sensorRequest.dataDescription());
+        updated.setLastCommunication(Instant.now());
         updated.setZone(zone);
         try {
             Sensor saved = repository.saveAndFlush(updated);
@@ -107,9 +111,9 @@ public class SensorServiceImpl implements SensorService {
             log.error("Sensor id: {} not found to be deleted ",uuid);
             return new SensorNotFoundException(uuid.toString(),"Sensor not found!");
         });
-        if (deleted.getStatus().isOperational()) {
+        if (deleted.getSensorStatus().isOperational()) {
             throw new SensorStillActiveException(uuid.toString(), true,
-                    "Sensor is currently active (%s), deactivate before deleting".formatted(deleted.getStatus()));
+                    "Sensor is currently active (%s), deactivate before deleting".formatted(deleted.getSensorStatus()));
         }
 
         repository.delete(deleted);
