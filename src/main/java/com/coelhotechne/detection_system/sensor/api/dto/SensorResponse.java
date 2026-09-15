@@ -4,6 +4,7 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorNiche;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorWithoutZoneException;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -17,6 +18,7 @@ import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
 import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,11 +26,13 @@ import java.util.UUID;
 @JsonPropertyOrder({
         "uuid",
         "name",
-        "status",
+        "sensorNiche",
+        "sensorStatus",
         "activationTime",
         "memoryUsed",
         "dataTransferValue",
         "dataDescription",
+        "lastCommunication",
         "installation",
         "zoneUuid",
         "powerSupply",
@@ -41,7 +45,8 @@ import java.util.UUID;
 public record SensorResponse(
         UUID uuid,
         String name,
-        SensorStatus status,
+        SensorNiche sensorNiche,
+        SensorStatus sensorStatus,
         @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -50,6 +55,7 @@ public record SensorResponse(
         BigDecimal memoryUsed,
         BigDecimal dataTransferValue,
         String dataDescription,
+        Instant lastCommunication,
         Installation installation,
         UUID zoneUuid,
         PowerSupply powerSupply,
