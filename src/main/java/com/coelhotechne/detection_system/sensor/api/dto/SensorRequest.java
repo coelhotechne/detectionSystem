@@ -3,6 +3,7 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.installation.domain.Installation;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorNiche;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
 import com.coelhotechne.detection_system.zone.domain.Zone;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,6 +21,8 @@ import java.util.UUID;
 public record SensorRequest(
         @NotBlank
         String name,
+        @NotBlank
+        SensorNiche sensorNiche,
         @NotNull
         LocalDateTime activationTime,
         @NotNull
@@ -27,6 +31,8 @@ public record SensorRequest(
         BigDecimal dataTransferValue,
         @NotBlank
         String dataDescription,
+        @NotBlank
+        Instant lastCommunication,
         @NotNull
         Installation installation,
         @NotNull
