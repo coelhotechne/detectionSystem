@@ -2,43 +2,32 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 
 import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
 import com.coelhotechne.detection_system.installation.domain.Installation;
-import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorNiche;
-import com.coelhotechne.detection_system.sensor.domain.enums.SensorStatus;
-import com.coelhotechne.detection_system.zone.domain.Zone;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record SensorRequest(
         @NotBlank
+        @Pattern(regexp = "^[A-Za-z0-9_-]{1,15}$",
+                message = "name must consist of up to 15 alphanumeric characters, '-', or '_' \n"
+                        + "(used as an MQTT topic segment)")
         String name,
         @NotBlank
         SensorNiche sensorNiche,
-        @NotNull
-        LocalDateTime activationTime,
-        @NotNull
-        BigDecimal memoryUsed,
-        @NotNull
-        BigDecimal dataTransferValue,
         @NotBlank
         String dataDescription,
-        @NotBlank
-        Instant lastCommunication,
         @NotNull
         Installation installation,
         @NotNull
         UUID zoneUUID,
         @Valid
         PowerSupply powerSupply
-
 ) {
 }
