@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface SensorRepository extends JpaRepository<Sensor, UUID> {
     Optional<Sensor> findByName(String name);
     Optional<Sensor>findByNameAndZoneName(String sensorName, String zoneName);
+    Long countByZoneUuid(UUID uuid);
 }
