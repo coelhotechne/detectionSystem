@@ -62,8 +62,7 @@ public class SensorEventApplier {
         Sensor.DiagnosticsOutcome outcome = sensor.applyDiagnostics(
                 event.diagnostics(),
                 event.occurredAt(),
-                thresholds,
-                thresholds.heartbeatWriteInterval());
+                thresholds);
         if (!outcome.persist()) {
             return;
         }
@@ -87,15 +86,12 @@ public class SensorEventApplier {
 
     private void applyReportedStatus(SensorStatusReportedEvent event) {
         Sensor sensor = requireSensor(event.sensorId());
-        SensorStatus previous = sensor.getSensorStatus();
-
-        boolean changed = sensor.applyReportedStatus(event.reportedStatus(), event.occurredAt());
-        if (!changed) {
-            return;
-        }
-
+        Sensor.DiagnosticsOutcome outcome =
+                sensor.applyReportedStatus(event.reportedStatus(), event.occurredAt(), thresholds);
+        if (!outcome.persist()) return;
         Sensor saved = saveOrConflict(sensor);
-        publishStatusChangeIfAny(saved.getUuid(), previous, saved.getSensorStatus(), event.occurredAt());
+        publishStatusChangeIfAny(saved.getUuid(), outcome.previousStatus(),
+                saved.getSensorStatus(), event.occurredAt());
     }
 
     private Sensor requireSensor(UUID uuid){
