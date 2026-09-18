@@ -4,6 +4,7 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 import com.coelhotechne.detection_system.globalClass.mapper.GenericMapper;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.exceptions.SensorWithoutZoneException;
+import com.coelhotechne.detection_system.zone.domain.Zone;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -20,23 +21,36 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
 
         entity.setName(request.name());
         entity.setSensorNiche(request.sensorNiche());
-        entity.setActivationTime(request.activationTime());
-        entity.setMemoryUsed(request.memoryUsed());
-        entity.setDataTransferValue(request.dataTransferValue());
         entity.setDataDescription(request.dataDescription());
         entity.setPowerSupply(request.powerSupply());
         entity.setInstallation(request.installation());
         return entity;
     }
+    public void applyReplace(Sensor entity, SensorReplaceRequest request, Zone zone) {
+        Objects.requireNonNull(request, "Request cannot be null");
+        Objects.requireNonNull(zone, "Zone cannot be null");
+
+        entity.setName(request.name());
+        entity.setDataDescription(request.dataDescription());
+        entity.setInstallation(request.installation());
+        entity.setZone(zone);
+    }
+
+    public void applyPatch(Sensor entity, SensorPatchRequest patch, Zone resolvedZone) {
+        Objects.requireNonNull(patch, "Patch cannot be null");
+
+        if (patch.name() != null)            entity.setName(patch.name());
+        if (patch.dataDescription() != null) entity.setDataDescription(patch.dataDescription());
+        if (patch.installation() != null)    entity.setInstallation(patch.installation());
+        if (patch.zoneUUID() != null)        entity.setZone(resolvedZone);
+    }
 
     @Override
     public SensorResponse toResponse(Sensor entity) {
         Objects.requireNonNull(entity, "Entity cannot be null");
-        UUID zoneUuid = entity.getZone() != null ? entity.getZone().getUuid() : null;
-        if (entity.getZone() == null){
-            throw new SensorWithoutZoneException(entity.getUuid().toString(),"Sensor without zone");
 
-        }
+        UUID zoneUuid = entity.getZone() != null ? entity.getZone().getUuid() : null;
+
         return new SensorResponse(
                 entity.getUuid(),
                 entity.getName(),
@@ -46,7 +60,7 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
                 entity.getMemoryUsed(),
                 entity.getDataTransferValue(),
                 entity.getDataDescription(),
-                entity.getLastCommunication(),
+                entity.getLastReadingAt(),
                 entity.getInstallation(),
                 zoneUuid,
                 entity.getPowerSupply(),
