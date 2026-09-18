@@ -1,10 +1,9 @@
 package com.coelhotechne.detection_system.sensor.application;
 
-import com.coelhotechne.detection_system.sensor.api.dto.SensorMapper;
-import com.coelhotechne.detection_system.sensor.api.dto.SensorRequest;
-import com.coelhotechne.detection_system.sensor.api.dto.SensorResponse;
+import com.coelhotechne.detection_system.sensor.api.dto.*;
 import com.coelhotechne.detection_system.sensor.application.event.SensorEventProcessor;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
+import com.coelhotechne.detection_system.sensor.domain.enums.SensorCommand;
 import com.coelhotechne.detection_system.sensor.event.SensorEvent;
 import com.coelhotechne.detection_system.sensor.exceptions.*;
 import com.coelhotechne.detection_system.sensor.mqtt.MqttSensorClient;
@@ -17,6 +16,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class SensorServiceImpl implements SensorService {
+
     private final SensorRepository repository;
     private final SensorMapper mapper;
     private final ZoneService zoneService;
@@ -34,21 +36,14 @@ public class SensorServiceImpl implements SensorService {
 
     @Override
     public Sensor requireSensor(UUID sensorId) {
-        if (sensorId==null){
-            throw new NullPointerException("Sensor cannot be null");
-        }
+        Objects.requireNonNull(sensorId,"Sensor cannot be null");
         return repository.findById(sensorId)
                 .orElseThrow(() -> new SensorNotFoundException(sensorId.toString(),"Sensor not found."));
     }
-
     @Override
     @Transactional(readOnly = true)
-    public List<SensorResponse> findSensorList() {
-        return repository
-                .findAll()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
+    public Page<SensorResponse> findSensorPageList(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toResponse);
     }
 
     @Override
@@ -61,6 +56,21 @@ public class SensorServiceImpl implements SensorService {
             log.error("Sensor with id: {} not find ",uuid);
             return new SensorNotFoundException(uuid.toString(),"Sensor not found!");
         });
+    }
+
+    @Override
+    @Transactional
+    public SensorResponse replaceSensor(UUID uuid, SensorReplaceRequest request, Long expectedVersion) {
+        Sensor sensor = requireSensor(uuid);
+
+        if (expectedVersion == null) {
+            throw new SensorPreconditionRequiredException(uuid.toString());
+        }
+        requireVersion(sensor, expectedVersion);
+
+        Zone zone = zoneService.requireZone(request.zoneUUID());
+        mapper.applyReplace(sensor, request, zone);
+        return saveOrConflict(sensor, uuid);
     }
 
     @Override
@@ -78,39 +88,53 @@ public class SensorServiceImpl implements SensorService {
 
     @Override
     @Transactional
-    public SensorResponse updateSensor(UUID uuid, SensorRequest sensorRequest) {
-        Sensor updated = repository
-                .findById(uuid)
-                .orElseThrow(()-> new SensorNotFoundException(uuid.toString(),"Sensor not found!"));
+    public SensorResponse patchSensor(UUID uuid, SensorPatchRequest patch, Long expectedVersion) {
+        if (patch.isEmpty()) {
+            throw new SensorPatchEmptyException(uuid.toString());
+        }
+
+        Sensor sensor = requireSensor(uuid);
+        requireVersion(sensor, expectedVersion);
+
+        Zone zone = patch.zoneUUID() == null ? null : zoneService.requireZone(patch.zoneUUID());
+        mapper.applyPatch(sensor, patch, zone);
+        return saveOrConflict(sensor, uuid);
+    }
+
+    /*@Override
+    @Transactional
+    public SensorResponse updateSensor(UUID , SensorRequest sensorRequest) {
+        Sensor updated = requireSensor(uuid);
+        Zone zone = zoneService.requireZone(sensorRequest.zoneUUID());
 
         if (updated.getSensorStatus().isOperational()) {
             throw new SensorStillActiveException(uuid.toString(), true,
                     "Sensor is currently active (%s), deactivate before updating".formatted(updated.getSensorStatus()));
         }
+        if (sensorRequest.installation()!=null){
+            updated.setInstallation(sensorRequest.installation());
+        }
+        if (sensorRequest.zoneUUID()!=null){
+            updated.setZone(zone);
+        }
 
-
-        Zone zone = zoneService.requireZone(sensorRequest.zoneUUID());
         updated.setName(sensorRequest.name());
-        updated.setMemoryUsed(sensorRequest.memoryUsed());
-        updated.setDataTransferValue(sensorRequest.dataTransferValue());
+        updated.setSensorNiche(sensorRequest.sensorNiche());
         updated.setDataDescription(sensorRequest.dataDescription());
         updated.setLastCommunication(Instant.now());
-        updated.setZone(zone);
         try {
             Sensor saved = repository.saveAndFlush(updated);
             return mapper.toResponse(saved);
         }catch (ObjectOptimisticLockingFailureException ex){
             throw new SensorConcurrentModificationException(uuid.toString(),ex);
         }
-    }
+    }*/
 
     @Override
     @Transactional
     public SensorResponse deleteSensor(UUID uuid) {
-        Sensor deleted =repository.findById(uuid).orElseThrow(()->{
-            log.error("Sensor id: {} not found to be deleted ",uuid);
-            return new SensorNotFoundException(uuid.toString(),"Sensor not found!");
-        });
+        Sensor deleted =requireSensor(uuid);
+
         if (deleted.getSensorStatus().isOperational()) {
             throw new SensorStillActiveException(uuid.toString(), true,
                     "Sensor is currently active (%s), deactivate before deleting".formatted(deleted.getSensorStatus()));
@@ -120,20 +144,33 @@ public class SensorServiceImpl implements SensorService {
         return mapper.toResponse(deleted);
     }
 
+
+    //::::::::::::::::::::::::::::::::::::::::::Intern processing:::::::::::::::::::::::::::::::::::::::
+    @Override
+    @Transactional
+    public SensorResponse requestMaintenance(UUID uuid) {
+        Sensor sensor = repository.findById(uuid)
+                .orElseThrow(() -> new SensorNotFoundException(uuid.toString(), "Sensor not found!"));
+        sensor.requestMaintenance();
+        return saveOrConflict(sensor, uuid);
+    }
+    @Override
+    @Transactional
+    public SensorResponse clearMaintenance(UUID uuid) {
+        Sensor sensor = requireSensor(uuid);
+        sensor.clearMaintenance();
+        return saveOrConflict(sensor, uuid);
+    }
+
     @Override
     public void process(SensorEvent event) {
-        // transação já acontece dentro de SensorEventProcessor.process — não
-        // duplica @Transactional aqui.
         eventProcessor.process(event);
     }
 
-
     @Override
-    public void sendCommand(UUID uuid, String action) {
-        Sensor sensor = repository
-                .findById(uuid)
-                .orElseThrow(() -> new SensorNotFoundException(uuid.toString(), "Sensor not found!"));
-
+    public void sendCommand(UUID uuid, SensorCommand sensorCommand) {
+        Objects.requireNonNull(sensorCommand,"Command cannot be null");
+        Sensor sensor = requireSensor(uuid);
         if (sensor.getZone() == null) {
             throw new SensorWithoutZoneException(uuid.toString(), "Zone from id: " + uuid + " not found!");
         }
@@ -141,9 +178,24 @@ public class SensorServiceImpl implements SensorService {
         String topic = "home/%s/%s/command".formatted(sensor.getZone().getName(), sensor.getName());
 
         try {
-            mqttSensorClient.publishCommand(topic, action);
+            mqttSensorClient.publishCommand(topic, sensorCommand.wireValue());
         } catch (MqttException e) {
             throw new SensorCommandDeliveryException(uuid, e);
+        }
+    }
+
+    private void requireVersion(Sensor sensor, Long expectedVersion) {
+        if (expectedVersion != null && !expectedVersion.equals(sensor.getVersion())) {
+            throw new SensorPreconditionFailedException(
+                    sensor.getUuid().toString(), String.valueOf(expectedVersion), sensor.getVersion());
+        }
+    }
+
+    private SensorResponse saveOrConflict(Sensor sensor, UUID uuid) {
+        try {
+            return mapper.toResponse(repository.saveAndFlush(sensor));
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new SensorConcurrentModificationException(uuid.toString(), ex);
         }
     }
 
