@@ -39,6 +39,9 @@ public enum SensorStatus {
         return this == INITIALIZING || this == OK || this == OUT_OF_SPECIFICATION || this == MAINTENANCE_REQUIRED;
     }
 
+    public boolean isDeviceReportable() {
+        return this != DISCONNECTED;
+    }
     /**
      * Recupera o Enum a partir do código numérico (útil para APIs e Bancos de Dados).
      */
