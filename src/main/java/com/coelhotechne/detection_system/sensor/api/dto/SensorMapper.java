@@ -38,11 +38,10 @@ public class SensorMapper implements GenericMapper<Sensor, SensorResponse, Senso
 
     public void applyPatch(Sensor entity, SensorPatchRequest patch, Zone resolvedZone) {
         Objects.requireNonNull(patch, "Patch cannot be null");
-
-        if (patch.name() != null)            entity.setName(patch.name());
-        if (patch.dataDescription() != null) entity.setDataDescription(patch.dataDescription());
-        if (patch.installation() != null)    entity.setInstallation(patch.installation());
-        if (patch.zoneUUID() != null)        entity.setZone(resolvedZone);
+        if (patch.name() != null)entity.setName(patch.name());
+        if (patch.dataDescription() != null)entity.setDataDescription(patch.dataDescription());
+        if (patch.installation() != null)entity.setInstallation(patch.installation());
+        if (patch.zoneUUID() != null)entity.setZone(resolvedZone);
     }
 
     @Override
