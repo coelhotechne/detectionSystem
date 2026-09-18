@@ -15,11 +15,8 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OptimisticLock;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonNaming;
-import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.ext.javatime.deser.LocalDateTimeDeserializer;
-import tools.jackson.databind.ext.javatime.ser.LocalDateTimeSerializer;
+
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -27,7 +24,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
-import static org.springframework.util.StringUtils.truncate;
 
 @Setter
 @Getter
@@ -36,21 +32,20 @@ import static org.springframework.util.StringUtils.truncate;
 @NoArgsConstructor
 @Table(name = "sensor",
         uniqueConstraints = @UniqueConstraint(
-        name = "uk_sensor_nome_zone", columnNames = {"nome", "zone_id"}),
+        name = "uk_sensor_name_zone", columnNames = {"name", "zone_id"}),
         indexes = {
                 @Index(name = "idx_sensor_zone", columnList = "zone_id"),
                 @Index(name = "idx_sensor_status", columnList = "sensor_status")
         }
 )
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Sensor extends BaseEntity {
     private static final Pattern TOPIC_SAFE_NAME = Pattern.compile("^[A-Za-z0-9_-]{1,15}$");
     private static final int DATA_DESCRIPTION_MAX = 255;
-    private static final BigDecimal DATA_TRANSFER_OUT_OF_SPEC = BigDecimal.valueOf(95);
 
-    @Column(nullable = false,name = "nome",length = 15)
+    @Column(nullable = false,name = "name",length = 15)
     private String name;
     @Enumerated(EnumType.STRING)
     @Column(name = "sensor_niche",nullable = false)
@@ -76,13 +71,23 @@ public class Sensor extends BaseEntity {
     @Column(name = "last_reading_at")
     private Instant lastReadingAt;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "status",      column = @Column(name = "installation_status", length = 20)),
+            @AttributeOverride(name = "installedAt", column = @Column(name = "installation_installed_at"))
+    })
     @EqualsAndHashCode.Exclude
     private Installation installation;
-    @ManyToOne(fetch = FetchType.LAZY,optional = true)
-    @JoinColumn(name = "zone_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "zone_id", nullable = false)
     @EqualsAndHashCode.Exclude
     private Zone zone;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "status",        column = @Column(name = "power_supply_status", length = 20)),
+            @AttributeOverride(name = "type",          column = @Column(name = "power_supply_type", length = 20)),
+            @AttributeOverride(name = "percentage",    column = @Column(name = "power_supply_percentage", precision = 5, scale = 2)),
+            @AttributeOverride(name = "lastReadingAt", column = @Column(name = "power_supply_last_reading_at"))
+    })
     @EqualsAndHashCode.Exclude
     private PowerSupply powerSupply;
     @JsonIgnore
@@ -101,35 +106,30 @@ public class Sensor extends BaseEntity {
             SensorStatus previousStatus,
             SensorStatus currentStatus,
             boolean persist
-    ){
-    public boolean statusChanged(){
-        return previousStatus!=currentStatus;
+    ) {
+        public boolean statusChanged() {
+            return previousStatus != currentStatus;
+        }
+
+        static DiagnosticsOutcome unchanged(SensorStatus current) {
+            return new DiagnosticsOutcome(current, current, false);
+        }
     }
-    }
-    /**
-     * Aplica uma leitura de diagnóstico recebida via telemetria MQTT e
-     * recalcula o status a partir dela — o status NUNCA é aceito como input
-     * direto (mesmo padrão já decidido pra PowerSupply.applyReading: "status
-     * é calculado, não recebido"). Retorna o status anterior, pra quem chamou
-     * decidir se quer emitir um SensorStatusEvent.
-     */
+
     public DiagnosticsOutcome applyDiagnostics(SensorTelemetryPayload payload,
                                                Instant observedAt,
-                                               SensorDiagnosticsThresholds thresholds,
-                                               Duration heartbeatWriteInterval) {
+                                               SensorDiagnosticsThresholds thresholds) {
         SensorStatus previous = this.sensorStatus;
 
-        if (lastReadingAt!=null&& observedAt.isBefore(lastReadingAt)){
-        return new DiagnosticsOutcome(previous,previous,false);
+        if (isOutOfOrder(observedAt)) {
+            return DiagnosticsOutcome.unchanged(previous);
         }
-        SensorStatus resolved =resolveStatus(payload,thresholds);
-        boolean statusChanged= resolved!=previous;
-        boolean heartbeatDue = lastReadingAt ==
-                null || Duration.between(lastReadingAt, observedAt)
-                .compareTo(heartbeatWriteInterval) >= 0;
 
-        if (!statusChanged && !heartbeatDue) {
-            return new DiagnosticsOutcome(previous, previous, false);
+        SensorStatus resolved = resolveStatus(payload, thresholds);
+        boolean statusChanged = resolved != previous;
+
+        if (!statusChanged && !isHeartbeatDue(observedAt, thresholds.heartbeatWriteInterval())) {
+            return DiagnosticsOutcome.unchanged(previous);
         }
 
         if (payload.memoryUsed() != null) {
@@ -141,10 +141,10 @@ public class Sensor extends BaseEntity {
         if (payload.dataDescription() != null && !payload.dataDescription().isBlank()) {
             this.dataDescription = truncate(payload.dataDescription());
         }
-        this.sensorStatus= resolved;
+        this.sensorStatus = resolved;
         this.lastReadingAt = observedAt;
 
-        return new DiagnosticsOutcome(previous,resolved,true);
+        return new DiagnosticsOutcome(previous, resolved, true);
     }
 
     private SensorStatus resolveStatus(SensorTelemetryPayload payload,
@@ -152,7 +152,7 @@ public class Sensor extends BaseEntity {
         if (Boolean.FALSE.equals(payload.status())) {
             return SensorStatus.FAULT;
         }
-        if (this.sensorStatus== SensorStatus.MAINTENANCE_REQUIRED) {
+        if (this.sensorStatus == SensorStatus.MAINTENANCE_REQUIRED) {
             return SensorStatus.MAINTENANCE_REQUIRED;
         }
         if (payload.dataTransferValue() != null
@@ -162,21 +162,28 @@ public class Sensor extends BaseEntity {
         return SensorStatus.OK;
     }
 
-    public boolean applyReportedStatus(SensorStatus reported, Instant observedAt) {
-        if (reported == null || !reported.isDeviceReportable()) {
-            return false;
+    public DiagnosticsOutcome applyReportedStatus(SensorStatus reported,
+                                                  Instant observedAt,
+                                                  SensorDiagnosticsThresholds thresholds) {
+        SensorStatus previous = this.sensorStatus;
+
+        if (reported == null || !reported.isDeviceReportable() || isOutOfOrder(observedAt)) {
+            return DiagnosticsOutcome.unchanged(previous);
         }
-        if (this.sensorStatus == SensorStatus.MAINTENANCE_REQUIRED
-                && reported != SensorStatus.FAULT) {
-            this.lastReadingAt = observedAt;
-            return false;
+
+        boolean maintenanceHold = previous == SensorStatus.MAINTENANCE_REQUIRED
+                && reported != SensorStatus.FAULT;
+        boolean statusChanged = !maintenanceHold && previous != reported;
+
+        if (!statusChanged && !isHeartbeatDue(observedAt, thresholds.heartbeatWriteInterval())) {
+            return DiagnosticsOutcome.unchanged(previous);
         }
+
         this.lastReadingAt = observedAt;
-        if (this.sensorStatus == reported) {
-            return false;
+        if (statusChanged) {
+            this.sensorStatus = reported;
         }
-        this.sensorStatus = reported;
-        return true;
+        return new DiagnosticsOutcome(previous, this.sensorStatus, true);
     }
 
     public boolean requestMaintenance() {
@@ -187,6 +194,16 @@ public class Sensor extends BaseEntity {
         return true;
     }
 
+
+    private boolean isOutOfOrder(Instant observedAt) {
+        return lastReadingAt != null && observedAt.isBefore(lastReadingAt);
+    }
+
+    private boolean isHeartbeatDue(Instant observedAt, Duration heartbeatWriteInterval) {
+        return lastReadingAt == null
+                || Duration.between(lastReadingAt, observedAt).compareTo(heartbeatWriteInterval) >= 0;
+    }
+
     public boolean clearMaintenance() {
         if (this.sensorStatus != SensorStatus.MAINTENANCE_REQUIRED) {
             return false;
@@ -195,23 +212,12 @@ public class Sensor extends BaseEntity {
         return true;
     }
 
-    public boolean detachZone() {
-        if (this.zone == null) {
-            return false;
-        }
-        this.zone = null;
-        return true;
-    }
-
-    public void touchCommunication(Instant at) {
-        this.lastCommunication = at;
-    }
-
     private static String truncate(String value) {
         return value.length() <= DATA_DESCRIPTION_MAX
                 ? value
                 : value.substring(0, DATA_DESCRIPTION_MAX);
     }
+
     public boolean markDisconnected() {
         if (this.sensorStatus == SensorStatus.DISCONNECTED) {
             return false;
@@ -220,4 +226,7 @@ public class Sensor extends BaseEntity {
         return true;
     }
 
+    public void touchCommunication(Instant at) {
+        this.lastCommunication = at;
+    }
 }
