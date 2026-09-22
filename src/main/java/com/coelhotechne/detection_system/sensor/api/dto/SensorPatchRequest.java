@@ -1,0 +1,29 @@
+package com.coelhotechne.detection_system.sensor.api.dto;
+
+import com.coelhotechne.detection_system.installation.domain.Installation;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
+
+import java.util.UUID;
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public record SensorPatchRequest(
+        @NotBlank
+        @Pattern(regexp = "^[A-Za-z0-9_-]{1,15}$",
+                message = "nome deve ter até 15 caracteres alfanuméricos, '-' ou '_' " +
+                        "(é usado como segmento de tópico MQTT)")
+        String name,
+        @Size(min = 1, max = 255, message = "data_description cannot be null")
+        String dataDescription,
+        Installation installation,
+        UUID zoneUUID
+)
+{
+    public boolean isEmpty() {
+        return name == null && dataDescription == null
+                && zoneUUID == null && installation == null;
+    }
+}
