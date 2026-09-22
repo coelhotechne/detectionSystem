@@ -3,7 +3,6 @@ package com.coelhotechne.detection_system.sensor.api.dto;
 
 import com.coelhotechne.detection_system.globalClass.mapper.GenericMapper;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
-import com.coelhotechne.detection_system.sensor.exceptions.SensorWithoutZoneException;
 import com.coelhotechne.detection_system.zone.domain.Zone;
 import org.springframework.stereotype.Component;
 
