@@ -1,5 +1,7 @@
 package com.coelhotechne.detection_system.sensor.application.event;
 
+import com.coelhotechne.detection_system.batterysupply.domain.PowerSupply;
+import com.coelhotechne.detection_system.batterysupply.domain.PowerSupplyThresholds;
 import com.coelhotechne.detection_system.sensor.domain.Sensor;
 import com.coelhotechne.detection_system.sensor.domain.SensorDiagnosticsThresholds;
 import com.coelhotechne.detection_system.sensor.domain.enums.SensorNiche;
@@ -27,17 +29,20 @@ public class SensorEventApplier {
     private final ApplicationEventPublisher eventPublisher;
     private final SensorDiagnosticsThresholds thresholds;
     private final Map<SensorNiche, SensorNicheReadingHandler> nicheHandlers;
+    private final PowerSupplyThresholds powerSupplyThresholds;
 
     public SensorEventApplier(
             SensorRepository sensorRepository,
             ApplicationEventPublisher eventPublisher,
             SensorDiagnosticsThresholds thresholds,
+            PowerSupplyThresholds powerSupplyThresholds,
             List<SensorNicheReadingHandler> handler
             ){
         this.repository=sensorRepository;
         this.eventPublisher=eventPublisher;
         this.thresholds=thresholds;
         this.nicheHandlers= new EnumMap<>(SensorNiche.class);
+        this.powerSupplyThresholds=powerSupplyThresholds;
         handler.forEach(h -> this.nicheHandlers.put(h.niche(),h));
     }
     @Transactional
@@ -49,8 +54,8 @@ public class SensorEventApplier {
         } else if (sensorEvent instanceof SensorDetectionEvent e) {
             applyDetection(e);
         } else if (sensorEvent instanceof SensorStatusEvent e) {
-            log.warn("SensorStatusEvent recebido como entrada — ele é evento de SAÍDA (auditoria), " +
-                    "emitido por esta própria classe: {}", e);
+            log.warn("SensorStatusEvent received as an input — it is an OUTPUT event (audit), " +
+                    "issued by this very class: {}", e);
         } else {
             throw new IllegalStateException("Unhandled SensorEvent type: " + sensorEvent.getClass());
         }
@@ -63,14 +68,33 @@ public class SensorEventApplier {
                 event.diagnostics(),
                 event.occurredAt(),
                 thresholds);
-        if (!outcome.persist()) {
+
+        PowerSupply.PowerOutcome power= applyPowerReading(sensor,event);
+        if (!outcome.persist() && !power.persist()) {
             return;
         }
-
         Sensor saved = saveOrConflict(sensor);
         publishStatusChangeIfAny(saved.getUuid(), outcome.previousStatus(),
                 saved.getSensorStatus(), event.occurredAt());
     }
+
+    private PowerSupply.PowerOutcome applyPowerReading(Sensor sensor, SensorTelemetryEvent event) {
+        PowerSupply power = sensor.getPowerSupply();
+        if (power==null){
+            log.debug("Sensor {} with not power supply - power reading ignored ",sensor.getUuid());
+            return PowerSupply.PowerOutcome.unchanged(power.getStatus());
+        }
+        if (!event.diagnostics().hasPowerReading()){
+            return PowerSupply.PowerOutcome.unchanged(power.getStatus());
+        }
+        return power.applyReading(
+                event.diagnostics().powerPercentege(),
+                event.diagnostics().powerCharging(),
+                event.occurredAt(),
+                powerSupplyThresholds
+        );
+    }
+
     private void applyDetection(SensorDetectionEvent event) {
         Sensor sensor = requireSensor(event.sensorId());
 
@@ -78,7 +102,7 @@ public class SensorEventApplier {
         if (handle != null) {
             handle.handler(sensor, event.detection());
         } else {
-            log.debug("Sem handle para o nicho {} (sensor {}) — detecção registrada sem interpretação",
+            log.debug("No handle for the niche.{} (sensor {}) — detection recorded without interpretation",
                     sensor.getSensorNiche(), sensor.getUuid());
         }
         eventPublisher.publishEvent(event);
