@@ -1,9 +1,11 @@
 package com.coelhotechne.detection_system.zone.application;
 
+import com.coelhotechne.detection_system.sensor.infrastructure.SensorRepository;
 import com.coelhotechne.detection_system.zone.api.dto.ZoneMapper;
 import com.coelhotechne.detection_system.zone.api.dto.ZoneRequest;
 import com.coelhotechne.detection_system.zone.api.dto.ZoneResponse;
 import com.coelhotechne.detection_system.zone.domain.Zone;
+import com.coelhotechne.detection_system.zone.exceptions.ZoneInUseException;
 import com.coelhotechne.detection_system.zone.exceptions.ZoneNotFoundException;
 import com.coelhotechne.detection_system.zone.infrastructure.ZoneRepository;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class ZoneServiceImp implements ZoneService{
     private final ZoneRepository repository;
     private final ZoneMapper mapper;
+    private final SensorRepository sensorRepository;
 
     @Override
     public Zone requireZone(UUID zoneId) {
@@ -71,6 +74,10 @@ public class ZoneServiceImp implements ZoneService{
 
     @Override
     public ZoneResponse deleteZone(UUID uuid) {
+        long inUse = sensorRepository.countByZoneUuid(uuid);
+        if (inUse > 0) {
+            throw new ZoneInUseException(uuid.toString(), inUse);
+        }
         Zone deleted = repository.findById(uuid).orElseThrow(()-> {
             log.error("Zone with id: {} not found!",uuid);
             return new ZoneNotFoundException(uuid.toString(),"Zone not found");
