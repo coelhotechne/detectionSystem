@@ -551,7 +551,6 @@ Não há cobertura de testes efetiva das regras de domínio.
 
 ## 9. Pontos de atenção que estão sendo corrigidos
 
-Itens observados no código durante a documentação (não foram alterados). Vale revisar:
 
 **Segurança / rotas**
 
