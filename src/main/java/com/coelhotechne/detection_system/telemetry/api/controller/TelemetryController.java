@@ -13,6 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,23 +26,28 @@ import java.util.UUID;
 public class TelemetryController {
     private final TelemetryService service;
     // ---- CRUD manual ----
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<TelemetryResponse>> findPageTelemetryList(
             @PageableDefault(size = 20, sort = "measuredAt", direction = Sort.Direction.DESC) Pageable pageable){
         return ResponseEntity.status(HttpStatus.OK).body(service.findTelemetryPageList(pageable));
     }
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/api/v1/telemetry/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TelemetryResponse>> findAllTelemetryList(){
         return ResponseEntity.status(HttpStatus.OK).body(service.findAllTelemetryList());
     }
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse>findTelemetryId(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.OK).body(service.findTelemetryId(id));
     }
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse>createTelemetryManually(@Valid @RequestBody TelemetryRequest telemetryRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createTelemetry(telemetryRequest));
     }
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PutMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse>updateTelemetryManually(@PathVariable UUID id,@Valid @RequestBody TelemetryRequest telemetryRequest){
         return ResponseEntity.status(HttpStatus.OK).body(service.updateTelemetry(id,telemetryRequest));
@@ -51,25 +57,26 @@ public class TelemetryController {
         return ResponseEntity.status(HttpStatus.OK).body(service.deleteTelemetry(id));
     }
     // Consult from Service
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/zone/{zoneId}/{telemetryId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse> getByZone(@PathVariable UUID zoneId,@Valid @PathVariable UUID telemetryId) {
         return ResponseEntity.status(HttpStatus.OK).body(service.findTelemetryWithZone(telemetryId, zoneId));
     }
-
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/sensor/{sensorId}/{telemetryId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse> getBySensor(@PathVariable UUID sensorId, @PathVariable UUID telemetryId) {
         return ResponseEntity.status(HttpStatus.OK).body(service.findTelemetryWithSensor(telemetryId, sensorId));
     }
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/zone/{zoneId}/sensor/{sensorId}/{telemetryId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryResponse> getBySensorAndZone(@PathVariable UUID telemetryId
             ,@PathVariable UUID zoneId
             , @PathVariable UUID sensorId) {
         return ResponseEntity.status(HttpStatus.OK).body(service.findTelemetryWithZoneAndSensor(telemetryId,zoneId, sensorId));
     }
-
+    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/sensor/{sensorId}/latest", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TelemetryResponse>> getLatestBySensor(@PathVariable UUID sensorId) {
         return ResponseEntity.ok(service.findLatestBySensor(sensorId));
     }
-
 }
