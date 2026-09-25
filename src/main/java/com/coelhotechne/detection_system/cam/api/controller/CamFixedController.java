@@ -34,7 +34,7 @@ public class CamFixedController {
     }
 
     @Operation(summary = "Lista câmeras fixas cadastradas")
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CamFixedResponse>>findCamFixedList(){
         return ResponseEntity.status(HttpStatus.OK).body(service.findCamList());
     }
