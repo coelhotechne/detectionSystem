@@ -22,18 +22,18 @@ import java.util.UUID;
 @Tag(name = "Device")
 public class DeviceController {
     private final DeviceService deviceService;
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DeviceResponse>> findDeviceList(){
         return ResponseEntity.status(HttpStatus.OK).body(deviceService.findDeviceList());
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @GetMapping(value = "/{id}"
             ,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeviceResponse>findDeviceId(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.OK).body(deviceService.findDeviceId(id));
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE
             ,consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody DeviceRequest deviceRequest){
@@ -41,14 +41,14 @@ public class DeviceController {
         URI location = URI.create("/device/"+response.uuid());
         return ResponseEntity.created(location).body(response);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PutMapping(value = "/{id}"
             ,produces = MediaType.APPLICATION_JSON_VALUE
             ,consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeviceResponse> updateDevice(@PathVariable UUID id,@Valid @RequestBody DeviceRequest deviceRequest){
         return ResponseEntity.status(HttpStatus.OK).body(deviceService.updateDevice(id,deviceRequest));
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<DeviceResponse> deleteDevice(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(deviceService.deleteDevice(id));
