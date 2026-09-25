@@ -31,17 +31,17 @@ public class LocationController {
     public ResponseEntity<LocationResponse>findLocationId(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.OK).body(service.findLocationId(id));
     }
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LocationResponse> createLocation(@RequestBody LocationRequest locationRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createLocation(locationRequest));
     }
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @PutMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LocationResponse> updateLocation(@PathVariable UUID id, @RequestBody LocationRequest locationRequest){
         return ResponseEntity.status(HttpStatus.OK).body(service.updateLocation(id,locationRequest));
     }
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasRole('ADMIN','TECHNICIAN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<LocationResponse> deleteLocation(@PathVariable UUID id){
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(service.deleteLocation(id));
