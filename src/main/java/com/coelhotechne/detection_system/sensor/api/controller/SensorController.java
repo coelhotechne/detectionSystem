@@ -25,7 +25,7 @@ import java.util.UUID;
 
 @RestController
 @Tag(name = "Sensor")
-@RequestMapping(value = "/api/v1/sensors",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/sensor",produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class SensorController {
 
