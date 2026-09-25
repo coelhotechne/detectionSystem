@@ -1,4 +1,4 @@
-package com.coelhotechne.detection_system.device.api.controller.auth;
+package com.coelhotechne.detection_system.device.api.controller;
 
 import com.coelhotechne.detection_system.device.api.dto.auth.DeviceAuthRequest;
 import com.coelhotechne.detection_system.device.api.dto.auth.DeviceAuthResponse;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/device",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/device",produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class DeviceAuthController {
 
